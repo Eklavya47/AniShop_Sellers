@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name = "base">16dp</dimen>
+    <dimen name = "xxs">2dp</dimen>
+    <dimen name = "xs">4dp</dimen>
+    <dimen name = "s">6dp</dimen>
+    <dimen name="sm">10dp</dimen>
+    <dimen name="m">14dp</dimen>
+    <dimen name="ml">20dp</dimen>
+    <dimen name="l">28dp</dimen>
+    <dimen name="xl">40dp</dimen>
+</resources>
