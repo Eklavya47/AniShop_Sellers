@@ -8,6 +8,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
+kotlinxSerializationJson = "1.7.3"
 composeBom = "2024.04.01"
 navigationCompose = "2.8.5"
 hilt = "2.52"
@@ -50,6 +51,7 @@ compose = { group = "com.github.bumptech.glide", name = "compose", version.ref =
 androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "multidex" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

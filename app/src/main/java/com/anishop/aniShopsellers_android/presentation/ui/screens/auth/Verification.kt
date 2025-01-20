@@ -49,10 +49,9 @@ import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.viewModel
 import com.anishop.aniShopsellers_android.utils.network.UiState
 
 @Composable
-fun OTPInputScreen(
+fun VerificationScreen(
     userEmail: String,
-    screenName: String,
-    onContinueClick: (String,String) -> Unit,
+    onContinueClick: () -> Unit,
     navigateUp: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {

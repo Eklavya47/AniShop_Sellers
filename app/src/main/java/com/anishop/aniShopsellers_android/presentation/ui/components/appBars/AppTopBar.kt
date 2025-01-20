@@ -20,7 +20,7 @@ import com.anishop.aniShopsellers_android.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(
+fun AppTopBar(
     title: String,
     onBackNavigationClick: () -> Unit,
     actions : @Composable() (RowScope.() -> Unit) = {},

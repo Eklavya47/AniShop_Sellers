@@ -46,8 +46,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 
 @Composable
 fun LoginScreen(
-    onCreateAccountClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
+    onLoginVerifyClick: (String, Boolean) -> Unit,
+    onLoginSuccessClick: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     var email by remember { mutableStateOf("") }
@@ -188,7 +189,7 @@ fun LoginScreen(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
                                 .clickable {
-                                    onCreateAccountClick()
+                                    //onCreateAccountClick()
                                 }
                         )
                         Spacer(Modifier.height(20.dp))

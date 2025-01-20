@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
+    kotlin("plugin.serialization") version "1.9.25"
 }
 
 android {
@@ -85,4 +86,7 @@ dependencies {
     implementation(libs.timber)
 
     implementation(libs.androidx.multidex)
+
+    // KotlinxSerialization
+    implementation(libs.kotlinx.serialization.json)
 }

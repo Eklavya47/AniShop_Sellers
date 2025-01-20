@@ -1,4 +1,4 @@
-package com.anishop.aniShopsellers_android.presentation.ui.screens.main
+package com.anishop.aniShopsellers_android.presentation.ui.screens.main.home
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,8 +45,8 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.anishop.aniShopsellers_android.R
 import com.anishop.aniShopsellers_android.presentation.ui.components.CustomDropdownField
-import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.TopAppBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.CustomInputField
+import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.buttons.GradientButton
 
 @Composable
@@ -67,7 +67,7 @@ fun AddProductScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = "Add Product",
                 onBackNavigationClick = {
                     onNavigateBack()
