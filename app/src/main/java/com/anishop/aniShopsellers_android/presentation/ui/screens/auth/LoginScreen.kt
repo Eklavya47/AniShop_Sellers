@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +48,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 @Composable
 fun LoginScreen(
     onForgotPasswordClick: () -> Unit,
-    onLoginVerifyClick: (String, Boolean) -> Unit,
+    onLoginVerifyClick: (String) -> Unit,
     onLoginSuccessClick: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -59,9 +60,8 @@ fun LoginScreen(
     var isPasswordVerified by remember { mutableStateOf(false) }
     var isEmailVerified by remember { mutableStateOf(false) }
 
-    var isGoogleSignUp by remember { mutableStateOf(false) }
-
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(email) {
         isEmailError = email.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -212,22 +212,17 @@ fun LoginScreen(
             }
         }
     }
-    /*when (uiState) {
-
+    when (uiState) {
         is UiState.onSuccess -> {
-
-            onLoginVerifyClick(email, isGoogleSignUp)
+            onLoginVerifyClick(email)
             viewModel.resetState()
         }
-
         is UiState.onFailure -> {
             Toast.makeText(
                 context, (uiState as UiState.onFailure).message, Toast.LENGTH_SHORT
             ).show()
             viewModel.resetState()
         }
-
         else -> Unit
-
-    }*/
+    }
 }

@@ -25,16 +25,12 @@ fun AuthNavigation(
                 onForgotPasswordClick = {
                     authNavController.navigate(AuthNavGraph.ForgotPassword)
                 },
-                onLoginVerifyClick = { userEmail, isGoogleSignUp ->
-                    if (isGoogleSignUp) {
-                        onAuthComplete()
-                    } else {
-                        authNavController.navigate(
-                            AuthNavGraph.Verification(
-                                userEmail = userEmail,
-                            )
+                onLoginVerifyClick = { userEmail->
+                    authNavController.navigate(
+                        AuthNavGraph.Verification(
+                            userEmail = userEmail,
                         )
-                    }
+                    )
                 },
                 onLoginSuccessClick = {
                     onAuthComplete()

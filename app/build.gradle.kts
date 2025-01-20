@@ -89,4 +89,7 @@ dependencies {
 
     // KotlinxSerialization
     implementation(libs.kotlinx.serialization.json)
+
+    //Local Storage
+    implementation(libs.androidx.security.crypto)
 }
