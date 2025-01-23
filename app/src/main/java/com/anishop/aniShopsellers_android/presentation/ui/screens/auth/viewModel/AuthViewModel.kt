@@ -31,6 +31,10 @@ class AuthViewModel @Inject constructor(
         secureStorage.edit().putBoolean("isLoggedIn", true).apply()
     }
 
+    fun logoutUser() {
+        secureStorage.edit().putBoolean("isLoggedIn", false).apply()
+    }
+
     fun isLoggedIn(): Boolean {
         return secureStorage.getBoolean("isLoggedIn", false)
     }

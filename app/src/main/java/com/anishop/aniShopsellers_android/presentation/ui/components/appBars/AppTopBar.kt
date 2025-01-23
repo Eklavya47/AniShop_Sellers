@@ -24,6 +24,8 @@ fun AppTopBar(
     title: String,
     onBackNavigationClick: () -> Unit,
     actions : @Composable() (RowScope.() -> Unit) = {},
+    navIcon: ImageVector = ImageVector.vectorResource(R.drawable.arrow_back), // Default icon
+    navIconContentDescription: String = "Navigate back", // Default content description
     navIconPadding: Int = 16
 ) {
     Column {
@@ -39,8 +41,8 @@ fun AppTopBar(
             },
             navigationIcon = {
                 Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.arrow_back),
-                    contentDescription = "Navigate back",
+                    imageVector = navIcon,
+                    contentDescription = navIconContentDescription,
                     tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .clickable { onBackNavigationClick() }

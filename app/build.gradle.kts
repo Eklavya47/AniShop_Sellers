@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.anishop.aniShopsellers_android"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.anishop.aniShopsellers_android"

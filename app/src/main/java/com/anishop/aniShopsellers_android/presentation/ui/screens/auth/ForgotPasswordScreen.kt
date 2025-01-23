@@ -1,6 +1,7 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.auth
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,10 +61,9 @@ fun ForgotPasswordScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
                 Column(
                     modifier = Modifier
                         .padding(vertical = 10.dp, horizontal = 4.dp),
@@ -96,7 +96,7 @@ fun ForgotPasswordScreen(
                 GradientButton(
                     text = "Send OTP",
                     onClick = {
-                        //viewModel.forgetPassword(email)
+                        viewModel.forgetPassword(email)
                     },
                     buttonWidth = 1f,
                     modifier = Modifier
@@ -116,14 +116,11 @@ fun ForgotPasswordScreen(
                 }
             }
         }
-        /*when (uiState) {
-
+        when (uiState) {
             is UiState.onSuccess -> {
-
                 onSendCodeClick(email)
                 viewModel.resetState()
             }
-
             is UiState.onFailure -> {
                 Toast.makeText(
                     context,
@@ -132,8 +129,7 @@ fun ForgotPasswordScreen(
                 ).show()
                 viewModel.resetState()
             }
-
             else -> Unit
-        }*/
+        }
     }
 }

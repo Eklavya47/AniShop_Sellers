@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -32,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,17 +53,17 @@ import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.App
 fun AllProductsScreen(
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigate: () -> Unit
 ) {
     // Fake Data
     val products = listOf(
-        ProductUI("11","Latest Men's hoodie blue with anime design", "₹ 1299","4.2",false, R.drawable.product_one,"₹ 999", 23),
-        ProductUI("12","Men's hoodie black with anime design", "₹ 2299","4.3",true, R.drawable.product_one, "₹ 1999", 13),
-        ProductUI("13","Men's tshirt black with anime design", "₹ 1399","4.4",false, R.drawable.product_one, "₹ 699", 50),
-        ProductUI("14","Men's polo blue with anime design", "₹ 999","4.5",false, R.drawable.product_one, "₹ 499", 50),
-        ProductUI("15","Men's white hoodie with anime design", "₹ 1599","4.2",true, R.drawable.product_one, "₹ 899", 43),
-        ProductUI("16","Men's polo tshirt with anime design", "₹ 999","4.0",true, R.drawable.product_one, "₹ 499", 50),
-        ProductUI("17","Men's tshirt black with anime design", "₹ 1399","4.4",false, R.drawable.product_one, "₹ 999", 28),
+        ProductUI("11","Latest Men's hoodie blue with anime design", "₹ 1299","4.2",false, R.drawable.product_one, 4.5),
+        ProductUI("12","Men's hoodie black with anime design", "₹ 2299","4.3",true, R.drawable.product_one, 4.5),
+        ProductUI("13","Men's tshirt black with anime design", "₹ 1399","4.4",false, R.drawable.product_one, 4.5),
+        ProductUI("14","Men's polo blue with anime design", "₹ 999","4.5",false, R.drawable.product_one, 4.5),
+        ProductUI("15","Men's white hoodie with anime design", "₹ 1599","4.2",true, R.drawable.product_one, 4.5),
+        ProductUI("16","Men's polo tshirt with anime design", "₹ 999","4.0",true, R.drawable.product_one, 4.5),
+        ProductUI("17","Men's tshirt black with anime design", "₹ 1399","4.4",false, R.drawable.product_one, 4.5),
     )
 
     Scaffold(
@@ -67,8 +71,10 @@ fun AllProductsScreen(
             AppTopBar(
                 title = "All Products",
                 onBackNavigationClick = {
-                    onNavigateBack()
-                }
+                    onNavigate()
+                },
+                navIcon = ImageVector.vectorResource(R.drawable.ic_account_circle_outlined),
+                navIconContentDescription = "Go to Account Screen"
             )
         },
         bottomBar = {
@@ -82,10 +88,11 @@ fun AllProductsScreen(
     ) {innerPadding ->
         LazyVerticalGrid(
             columns = GridCells.Fixed(2), // 2 columns
-            contentPadding = innerPadding,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black),
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 5.dp),
+                //.background(Color.Black),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -103,7 +110,6 @@ fun AllProductsScreen(
 // Product Card
 @Composable
 fun ProductCard(
-    modifier: Modifier = Modifier,
     product: ProductUI,
     onProductClick: (ProductUI) -> Unit,
     onHeartClick: () -> Unit
@@ -133,7 +139,7 @@ fun ProductCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
             )
             Card(
                 shape = RoundedCornerShape(10.dp),
@@ -193,22 +199,26 @@ fun ProductCard(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color(0xFF909DA5)
                     ),
-                    textDecoration = TextDecoration.LineThrough
+                    //textDecoration = TextDecoration.LineThrough
                 )
-                Text(
-                    text = product.discountPrice,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight(450),
-                        color = MaterialTheme.colorScheme.onBackground
+                Spacer(modifier = Modifier.weight(1f))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.rating_star),
+                        contentDescription = "Rating",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.Unspecified
                     )
-                )
-                Text(
-                    text = "-" + product.percentageOff.toString() + "%",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        //color = Color(0XFF20ed09) GREEN COLOR
-                        color = Color(0xFFf05107)
+                    Text(
+                        text = product.rating.toString(),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     )
-                )
+                }
             }
         }
     }
@@ -221,6 +231,5 @@ data class ProductUI(
     val averageRating: String,
     val isWishlisted: Boolean,
     @DrawableRes val productImage: Int,
-    val discountPrice: String,
-    val percentageOff: Int
+    val rating: Double,
 )

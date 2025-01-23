@@ -1,5 +1,6 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.buttons.GradientButton
 import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.common.TextWithDifferentColors
 import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.viewModel.AuthViewModel
@@ -61,17 +64,26 @@ fun VerificationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    Scaffold {innerPadding ->
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Verification",
+                onBackNavigationClick = {
+                    navigateUp()
+                }
+            )
+        }
+    ) {innerPadding ->
         Box(modifier = Modifier.fillMaxSize())
         {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
+                //Spacer(modifier = Modifier.height(20.dp))
                 Column(
                     modifier = Modifier
                         .padding(vertical = 10.dp, horizontal = 4.dp),
@@ -114,7 +126,7 @@ fun VerificationScreen(
                         modifier = Modifier
                             .align(Alignment.Start)
                             .clickable {
-                                //onCreateAccountClick()
+
                             }
                     )
                     /*Row(
@@ -143,18 +155,7 @@ fun VerificationScreen(
                 GradientButton(
                     text = "Enter OTP",
                     onClick = {
-                        /*if (otpEntered.isNotEmpty()) {
-                            if (screenName == "SignUpScreen") {
-                                viewModel.signUpOTPVerify(userEmail, otpEntered)
-                            } else if (screenName == "ForgotPasswordScreen") {
-                                viewModel.forgetPasswordOTPVerify(userEmail, otpEntered)
-                            } else {
-                                viewModel.loginOtpVerify(userEmail, otpEntered)
-                            }
-                        } else {
-                            Toast.makeText(context, "Please enter the OTP", Toast.LENGTH_SHORT)
-                                .show()
-                        }*/
+                        viewModel.loginOtpVerify(userEmail, otpEntered)
                     },
                     enabled = otpValues.isNotEmpty(),
                     buttonWidth = 1f,
@@ -162,7 +163,6 @@ fun VerificationScreen(
                         .padding(horizontal = 2.dp, vertical = 20.dp)
                 )
             }
-
             if (uiState is UiState.Loading) {
                 Box(
                     modifier = Modifier
@@ -175,15 +175,13 @@ fun VerificationScreen(
                 }
             }
         }
-        /*when (uiState) {
-
+        when (uiState) {
             is UiState.onSuccess -> {
                 LaunchedEffect(Unit) {
-                    onContinueClick(screenName,userEmail)
+                    onContinueClick()
                     viewModel.resetState()
                 }
             }
-
             is UiState.onFailure -> {
                 LaunchedEffect(uiState) {
                     Toast.makeText(
@@ -191,12 +189,11 @@ fun VerificationScreen(
                         (uiState as UiState.onFailure).message,
                         Toast.LENGTH_SHORT
                     ).show()
-                    viewModel.resetState() // Reset the state to allow retry
+                    viewModel.resetState()
                 }
             }
-
             else -> Unit
-        }*/
+        }
     }
 }
 

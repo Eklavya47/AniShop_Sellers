@@ -1,10 +1,10 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.main.account
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,7 +37,7 @@ import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.App
 fun SettingsScreen(
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
-    onNavigateBack: () -> Unit,
+    onNavigate: () -> Unit,
     onLogoutClick: () -> Unit,
 ) {
     Scaffold(
@@ -45,7 +45,7 @@ fun SettingsScreen(
             AppTopBar(
                 title = "Settings",
                 onBackNavigationClick = {
-                    onNavigateBack()
+                    onNavigate()
                 }
             )
         },
@@ -62,8 +62,8 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
+                //.navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 5.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Seller Account Card
@@ -71,13 +71,15 @@ fun SettingsScreen(
                 leadingIcon = R.drawable.ic_account_circle_outlined,
                 trailingIcon = R.drawable.ic_chevron_right,
                 title = "Seller Account",
-                onClick = { /*onOptionsClick(AccountScreenOption.MyOrders)*/ }
+                onClick = {  }
             )
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // General Statment
                 OptionsCard(
@@ -116,6 +118,7 @@ fun SettingsScreen(
             LogoutButton(
                 onClick = onLogoutClick
             )
+            Spacer(modifier = Modifier.height(15.dp))
         }
     }
 }
@@ -131,7 +134,6 @@ fun LogoutButton(
             containerColor = Color.Transparent,
         ),
         modifier = Modifier
-            .padding(vertical = 16.dp)
             .height(48.dp),
         border = BorderStroke(width = 1.dp, color = Color(0xFFED1010)),
         shape = RoundedCornerShape(10.dp)
@@ -151,7 +153,7 @@ fun LogoutButton(
             )
             Text(
                 text = "Logout",
-                style = MaterialTheme.typography.bodyMedium.copy(
+                style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color(0xFFED1010)
                 )
             )
@@ -171,11 +173,11 @@ fun OptionsCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(70.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF191919)
         ),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(15.dp),
         onClick = onClick
     ) {
         Row(
@@ -198,7 +200,7 @@ fun OptionsCard(
                 )
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodyMedium.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color(0xFFF1F1F1)
                     ),
                 )
@@ -207,7 +209,7 @@ fun OptionsCard(
                 imageVector = ImageVector.vectorResource(trailingIcon),
                 contentDescription = title,
                 modifier = Modifier
-                    .size(22.dp),
+                    .size(35.dp),
                 tint = Color(0xFFB3B3B3)
             )
         }

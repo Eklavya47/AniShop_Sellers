@@ -1,5 +1,6 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,9 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,8 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.buttons.GradientButton
 import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.common.PasswordInputField
+import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.common.TextWithDifferentColors
 import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.viewModel.AuthViewModel
 import com.anishop.aniShopsellers_android.utils.network.UiState
 
@@ -43,25 +48,82 @@ fun ResetPasswordScreen(
     var passwordOneVisibility by remember { mutableStateOf(false) }
     var reEnterPassword by remember { mutableStateOf("") }
     var passwordTwoVisibility by remember { mutableStateOf(false) }
+    val otpLength = 6
+    val otpValues = remember { List(otpLength) { mutableStateOf("") } }
+    var otpEntered by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    Scaffold {innerPadding ->
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Reset Password",
+                onBackNavigationClick = {
+                    navigateUp()
+                }
+            )
+        }
+    ) {innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
-
                 Column(
                     modifier = Modifier
                         .padding(vertical = 10.dp, horizontal = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(vertical = 10.dp, horizontal = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ){
+                        Text(
+                            text = "Enter 6 Digit Code",
+                            modifier = Modifier,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.05).em,
+                        )
+                        Text(
+                            text = "Enter 6 digit code that your receive on your email ($userEmail).",
+                            fontSize = 16.sp,
+                            color = Color(0xFF808080),
+                            fontWeight = FontWeight.Normal,
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OTPTextField(
+                            otpLength = otpLength,
+                            onOtpComplete = { otp ->
+                                otpEntered = otp
+                            },
+                            otpValues = otpValues,
+                        )
+                        TextWithDifferentColors(
+                            text1 = "Email not received?",
+                            text2 = " Resend code",
+                            color1 = Color(0xFF808080),
+                            color2 = Color(0xFF2391CE),
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .clickable {
+
+                                }
+                        )
+                    }
+
                     Text(
                         text = "Reset Password",
                         modifier = Modifier,
@@ -101,9 +163,9 @@ fun ResetPasswordScreen(
                 }
                 Spacer(modifier = Modifier.height(30.dp))
                 GradientButton(
-                    text = "Continue",
+                    text = "Login",
                     onClick = {
-                        //viewModel.resetPassword(userEmail,newPassword)
+                        viewModel.resetPassword(userEmail, otpEntered, newPassword)
                     },
                     enabled = newPassword == reEnterPassword && newPassword.isNotEmpty() && reEnterPassword.isNotEmpty(),
                     buttonWidth = 1f,
@@ -111,7 +173,6 @@ fun ResetPasswordScreen(
                         .padding(horizontal = 2.dp)
                 )
             }
-
             if (uiState is UiState.Loading) {
                 Box(
                     modifier = Modifier
@@ -124,15 +185,12 @@ fun ResetPasswordScreen(
                 }
             }
 
-            /*when (uiState) {
-
+            when (uiState) {
                 is UiState.onSuccess -> {
                     onContinueLogin()
                     viewModel.resetState()
                 }
-
                 is UiState.onFailure -> {
-
                     Toast.makeText(
                         context,
                         (uiState as UiState.onFailure).message,
@@ -141,9 +199,8 @@ fun ResetPasswordScreen(
 
                     viewModel.resetState()
                 }
-
                 else -> Unit
-            }*/
+            }
         }
     }
 }

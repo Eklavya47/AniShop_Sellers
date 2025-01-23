@@ -43,8 +43,8 @@ fun MainNavigation(
                             }
                         }
                     },
-                    onNavigateBack = {
-                        mainNavController.navigateUp()
+                    onNavigate = {
+                        mainNavController.navigate(MainNavGraph.Account)
                     }
                 )
             }
@@ -66,8 +66,8 @@ fun MainNavigation(
                         }
                     }
                 },
-                onNavigateBack = {
-                    mainNavController.navigateUp()
+                onNavigate = {
+                    mainNavController.navigate(MainNavGraph.Account)
                 }
             )
         }
@@ -81,8 +81,8 @@ fun MainNavigation(
                         }
                     }
                 },
-                onNavigateBack = {
-                    mainNavController.navigateUp()
+                onNavigate = {
+                    mainNavController.navigate(MainNavGraph.Account)
                 }
             )
         }
@@ -97,7 +97,7 @@ fun MainNavigation(
                             }
                         }
                     },
-                    onNavigateBack = {
+                    onNavigate = {
                         mainNavController.navigateUp()
                     },
                     onLogoutClick = {

@@ -3,9 +3,11 @@ package com.anishop.aniShopsellers_android.presentation.ui.screens.main.orders
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,9 +34,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import com.anishop.aniShopsellers_android.R
@@ -45,7 +54,7 @@ import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.App
 fun OrdersScreen(
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigate: () -> Unit
 ) {
     val dummyCategoryList = listOf("All Orders", "New Orders", "Dispatched", "Pending", "Return & Replace", "Cancel")
     var activeCategory by remember { mutableStateOf(dummyCategoryList[0]) }
@@ -82,8 +91,10 @@ fun OrdersScreen(
             AppTopBar(
                 title = "Orders",
                 onBackNavigationClick = {
-                    onNavigateBack()
-                }
+                    onNavigate()
+                },
+                navIcon = ImageVector.vectorResource(R.drawable.ic_account_circle_outlined),
+                navIconContentDescription = "Go to Account Screen"
             )
         },
         bottomBar = {
@@ -99,16 +110,14 @@ fun OrdersScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
+                //.navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 5.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Order Summary Text
             Text(
                 text = "Order Summary",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                style = MaterialTheme.typography.titleLarge,
             )
             // Order Summary Horizontal row
             LazyRow(
@@ -122,6 +131,7 @@ fun OrdersScreen(
                     OrderSummaryCard(title, count)
                 }
             }
+            Spacer(modifier = Modifier.height(10.dp))
             // Orders Type Scrollable row
             HorizontalCategorySelector(
                 categoriesList = dummyCategoryList,
@@ -130,6 +140,7 @@ fun OrdersScreen(
                 backGroundColor = MaterialTheme.colorScheme.background,
                 modifier = Modifier
             )
+            Spacer(modifier = Modifier.height(10.dp))
             // Vertical List of Orders
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -147,20 +158,21 @@ fun OrdersScreen(
 fun OrderSummaryCard(title: String, count: Int) {
     Card(
         modifier = Modifier
-            .size(120.dp, 60.dp),
+            .height(100.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.DarkGray
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(10.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .padding(horizontal = 15.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, style = MaterialTheme.typography.bodySmall, color = Color.LightGray)
+            Text(text = title, style = MaterialTheme.typography.titleSmall, color = Color.White)
+            Spacer(modifier = Modifier.height(10.dp))
             Text(text = count.toString(), style = MaterialTheme.typography.headlineSmall, color = Color.White)
         }
     }
@@ -180,7 +192,7 @@ fun HorizontalCategorySelector(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .background(color = backGroundColor)
-            .height(36.dp)
+            //.height(36.dp)
     ) {
         items(categoriesList.size) {
             CategoryButton(
@@ -200,8 +212,8 @@ fun CategoryButton(
 ) {
     Button(
         onClick = { onClick() },
-        modifier = Modifier
-            .sizeIn(maxHeight = 32.dp),
+        /*modifier = Modifier
+            .sizeIn(maxHeight = 32.dp),*/
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if(isActive) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surface,
@@ -210,7 +222,9 @@ fun CategoryButton(
     ) {
         Text(
             text = buttonTitle,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.SemiBold
+            )
         )
     }
 }
@@ -220,95 +234,114 @@ fun OrderCard(order: Order) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.DarkGray),
+            .height(150.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Image placeholder using drawable resource
             Image(
-                painter = painterResource(id = order.imageResId),
-                contentDescription = null,
+                painter = painterResource(order.imageResId),
+                contentDescription = "Product Image",
                 modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .width(130.dp)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(20.dp))
             )
-
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = order.title,
-                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
                 Text(
                     text = order.date,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
                 Text(
                     text = "Order#: ${order.id}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.titleSmall,
                     color = Color.White
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
+                Spacer(modifier = Modifier.weight(1f))
                 when (order.status) {
                     "New Order" -> {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
                                 onClick = { /* Handle Cancel */ },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                            ) {
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF25D61)),
+
+                                ) {
                                 Text(text = "Cancel")
                             }
                             Button(
                                 onClick = { /* Handle Confirm */ },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F5D0D)),
                             ) {
                                 Text(text = "Confirm")
                             }
                         }
                     }
                     "Pending" -> {
-                        Text(
-                            text = "Processing",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Yellow
-                        )
+                        Button(
+                            onClick = { /* Handle Cancel */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF17284E))
+                        ) {
+                            Text(
+                                text = "Processing",
+                                color = Color(0xFF0050FF)
+                            )
+                        }
                     }
                     "Shipped" -> {
-                        Text(
-                            text = "Shipped",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Cyan
-                        )
+                        Button(
+                            onClick = { /* Handle Cancel */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF012000))
+                        ) {
+                            Text(
+                                text = " Confirmed",
+                                color = Color(0xFF04A900)
+                            )
+                        }
                     }
                     "Canceled" -> {
-                        Text(
-                            text = "Canceled",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Red
-                        )
+                        Button(
+                            onClick = { /* Handle Cancel */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0x59903434))
+                        ) {
+                            Text(
+                                text = "Canceled",
+                                color = Color(0xFFDA0000)
+                            )
+                        }
                     }
                     "Return/Replace" -> {
-                        Text(
-                            text = "Return",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Magenta
-                        )
+                        Button(
+                            onClick = { /* Handle Cancel */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF282828))
+                        ) {
+                            Text(
+                                text = "Return",
+                                color = Color(0xFF989898)
+                            )
+                        }
                     }
                     "Dispatched" -> {
-                        Text(
-                            text = "Dispatched",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Green
-                        )
+                        Button(
+                            onClick = { /* Handle Cancel */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC77D00))
+                        ) {
+                            Text(text = "Dispatched")
+                        }
                     }
                 }
             }

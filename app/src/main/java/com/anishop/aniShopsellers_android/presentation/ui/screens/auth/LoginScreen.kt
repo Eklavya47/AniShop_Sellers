@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,10 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -43,7 +43,6 @@ import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.common.Pa
 import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.common.TextWithDifferentColors
 import com.anishop.aniShopsellers_android.presentation.ui.screens.auth.viewModel.AuthViewModel
 import com.anishop.aniShopsellers_android.utils.network.UiState
-import dagger.hilt.android.lifecycle.HiltViewModel
 
 @Composable
 fun LoginScreen(
@@ -68,136 +67,132 @@ fun LoginScreen(
         isEmailVerified = email.isNotEmpty() && !isEmailError
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
+    Scaffold {innerPadding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
+                //.navigationBarsPadding()
+                .padding(innerPadding)
         ) {
-            item {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        //Spacer(modifier = Modifier.height(220.dp))
-                        // login headline
-                        Column(
-
-                        ) {
-                            Text(
-                                text = "Login to your account",
-                                modifier = Modifier,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = (-0.05).em
-                            )
-                            Text(
-                                text = "It’s great to see you again.",
-                                modifier = Modifier,
-                                fontSize = 16.sp,
-                                color = Color(0xFF808080),
-                                fontWeight = FontWeight.Normal
-                            )
-                        }
-                        // Email input field
-                        EmailInputField(
-                            email = email,
-                            onValueChange = { email = it },
-                            isError = isEmailError,
-                            isVerified = isEmailVerified
-                        )
-                        // Password input field
-                        PasswordInputField(
-                            password = password,
-                            onValueChange = { password = it },
-                            isError = isPasswordError,
-                            isVerified = isPasswordVerified,
-                            inputTitle = "Password",
-                            placeHolderText = "Enter your password"
-                        )
-                        // forgot password button
-                        TextWithDifferentColors(
-                            text1 = "Forgot your password?",
-                            text2 = " Reset your password",
-                            color1 = Color(0xFF808080),
-                            color2 = Color(0xFF2391CE),
-                            modifier = Modifier
-                                .clickable {
-                                    onForgotPasswordClick()
-                                }
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 30.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // login headline
+                    Column{
+                        Text(
+                            text = "Login to your account",
+                            modifier = Modifier,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.05).em
                         )
                         Text(
-                            text = "By signing up you agree to our Terms, Privacy Policy and Cookie Use",
-                            fontWeight = FontWeight.Normal,
+                            text = "It’s great to see you again.",
+                            modifier = Modifier,
                             fontSize = 16.sp,
-                            color = Color(0xFF808080)
+                            color = Color(0xFF808080),
+                            fontWeight = FontWeight.Normal
                         )
-                        // Google sign in
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .padding(vertical = 20.dp)
-                        ) {
-                            GoogleAuthButton(
-                                onClick = {
-                                    //signInLauncher.launch(signInClient.signInIntent)
-                                },
-                                modifier = Modifier
-                                    .padding(vertical = 6.dp),
-                                buttonTitle = "Login in with google"
-                            )
-                            GradientButton(
-                                text = "Log in ",
-                                onClick = {
-                                    /*isGoogleSignUp = false
-                                    viewModel.loginEmail(
-                                        userEmail = email,
-                                        userPassword = password,
-                                        isGoogleSignUp = isGoogleSignUp
-                                    )*/
-                                },
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                buttonWidth = 1f,
-                                enabled = isEmailVerified && password.isNotEmpty()
-                            )
-                        }
-                        /*Text(
-                            text = "Login as a Guest",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Normal,
-                            textDecoration = TextDecoration.Underline,
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .clickable {
-                                    onGuestLoginClick()
-                                }
-                                .padding(vertical = 4.dp, horizontal = 4.dp),
-                            color = MaterialTheme.colorScheme.onBackground
-                        )*/
-                        HorizontalDivider(thickness = 1.dp, color = Color(0xFF2F2F2F))
-                        TextWithDifferentColors(
-                            text1 = "Don't have an account?",
-                            text2 = " Create",
-                            color1 = Color(0xFF808080),
-                            color2 = Color(0xFF2391CE),
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .clickable {
-                                    //onCreateAccountClick()
-                                }
-                        )
-                        Spacer(Modifier.height(20.dp))
                     }
+                    Spacer(modifier = Modifier.height(20.dp))
+                    // Email input field
+                    EmailInputField(
+                        email = email,
+                        onValueChange = { email = it },
+                        isError = isEmailError,
+                        isVerified = isEmailVerified
+                    )
+                    // Password input field
+                    PasswordInputField(
+                        password = password,
+                        onValueChange = { password = it },
+                        isError = isPasswordError,
+                        isVerified = isPasswordVerified,
+                        inputTitle = "Password",
+                        placeHolderText = "Enter your password"
+                    )
+                    // forgot password button
+                    TextWithDifferentColors(
+                        text1 = "Forgot your password?",
+                        text2 = " Reset your password",
+                        color1 = Color(0xFF808080),
+                        color2 = Color(0xFF2391CE),
+                        modifier = Modifier
+                            .clickable {
+                                onForgotPasswordClick()
+                            }
+                    )
+                    Text(
+                        text = "By signing up you agree to our Terms, Privacy Policy and Cookie Use",
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp,
+                        color = Color(0xFF808080)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    // Google sign in
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .padding(vertical = 20.dp)
+                    ) {
+                        GoogleAuthButton(
+                            onClick = {
+                                //signInLauncher.launch(signInClient.signInIntent)
+                            },
+                            modifier = Modifier
+                                .padding(vertical = 6.dp),
+                            buttonTitle = "Login in with google"
+                        )
+                        GradientButton(
+                            text = "Log in ",
+                            onClick = {
+                                //isGoogleSignUp = false
+                                viewModel.loginEmail(
+                                    userEmail = email,
+                                    userPassword = password,
+                                    //isGoogleSignUp = isGoogleSignUp
+                                )
+                            },
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            buttonWidth = 1f,
+                            enabled = isEmailVerified && password.isNotEmpty()
+                        )
+                    }
+                    /*Text(
+                        text = "Login as a Guest",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable {
+                                onGuestLoginClick()
+                            }
+                            .padding(vertical = 4.dp, horizontal = 4.dp),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )*/
+                    HorizontalDivider(thickness = 1.dp, color = Color(0xFF2F2F2F))
+                    /*TextWithDifferentColors(
+                        text1 = "Don't have an account?",
+                        text2 = " Create",
+                        color1 = Color(0xFF808080),
+                        color2 = Color(0xFF2391CE),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clickable {
+                                //onCreateAccountClick()
+                            }
+                    )*/
+                    //Spacer(Modifier.height(20.dp))
                 }
-
             }
-
         }
 
         if (uiState is UiState.Loading) {

@@ -32,6 +32,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.anishop.aniShopsellers_android.R
 import com.anishop.aniShopsellers_android.presentation.navigation.MainNavGraph
+import com.anishop.aniShopsellers_android.ui.theme.Primary
 
 @Composable
 fun AppBottomNavBar(
@@ -71,10 +72,10 @@ fun AppBottomNavBar(
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(
-                            if (isSelected) topLevelRoute.selectedIcon else topLevelRoute.unSelectedIcon
+                            topLevelRoute.selectedIcon
                         ),
                         contentDescription = topLevelRoute.displayName,
-                        tint = if (isSelected) Color.Unspecified else Color.Unspecified,
+                        tint = if (isSelected) Primary else Color.Unspecified,
                         modifier = Modifier
                             .size(22.dp)
                     )
@@ -83,6 +84,7 @@ fun AppBottomNavBar(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         lineHeight = 16.8.sp,
+                        color = if (isSelected) Primary else Color.Unspecified
                     )
                 }
             }
@@ -91,15 +93,14 @@ fun AppBottomNavBar(
 }
 
 val topLevelRoutes = listOf(
-    TopLevelRoute("Home", R.drawable.ic_home_outlined, R.drawable.ic_home_filled, MainNavGraph.Home.HomePage),
-    TopLevelRoute("Products", R.drawable.ic_products_filled, R.drawable.ic_products_filled, MainNavGraph.AllProducts),
-    TopLevelRoute("Orders", R.drawable.ic_orders_outlined, R.drawable.ic_orders_filled, MainNavGraph.Orders),
-    TopLevelRoute("Account", R.drawable.ic_account_circle_outlined, R.drawable.ic_account_circle_filled, MainNavGraph.Account.SettingsPage),
+    TopLevelRoute("Home", R.drawable.ic_home_outlined, MainNavGraph.Home.HomePage),
+    TopLevelRoute("Products", R.drawable.ic_products_outlined, MainNavGraph.AllProducts),
+    TopLevelRoute("Orders", R.drawable.ic_orders_outlined, MainNavGraph.Orders),
+    TopLevelRoute("Account", R.drawable.ic_account_circle_outlined, MainNavGraph.Account.SettingsPage),
 )
 
 data class TopLevelRoute<T: Any>(
     val displayName: String,
-    @DrawableRes val unSelectedIcon: Int,
     @DrawableRes val selectedIcon: Int,
     val route: T
 )
