@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
@@ -24,7 +25,7 @@ class AuthRepository @Inject constructor(
             }
         """.trimIndent()
 
-        val requestBody = RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
+        val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
         emit(DataState.Loading)
 
         try {
@@ -46,7 +47,7 @@ class AuthRepository @Inject constructor(
             }
         """.trimIndent()
 
-        val requestBody = RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
+        val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
         emit(DataState.Loading)
 
         try {
@@ -64,7 +65,7 @@ class AuthRepository @Inject constructor(
             }
         """.trimIndent()
 
-        val requestBody = RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
+        val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
         emit(DataState.Loading)
 
         try {
@@ -88,7 +89,7 @@ class AuthRepository @Inject constructor(
             }
         """.trimIndent()
 
-        val requestBody = RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
+        val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
         emit(DataState.Loading)
 
         try {

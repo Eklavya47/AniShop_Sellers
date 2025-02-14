@@ -1,8 +1,16 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.main.home
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +35,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,28 +52,74 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.anishop.aniShopsellers_android.R
 import com.anishop.aniShopsellers_android.presentation.ui.components.CustomDropdownField
 import com.anishop.aniShopsellers_android.presentation.ui.components.CustomInputField
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.buttons.GradientButton
+import com.anishop.aniShopsellers_android.presentation.ui.screens.main.home.viewModel.AddProductViewModel
+import com.anishop.aniShopsellers_android.utils.network.UiState
+import java.io.File
+import java.io.FileOutputStream
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddProductScreen(
     onNavigateBack: () -> Unit,
+    viewModel: AddProductViewModel = hiltViewModel()
 ) {
     var productName by remember { mutableStateOf("") }
     var productBarcode by remember { mutableStateOf("") }
     var productDescription by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
     val categoryOptions = listOf("Shirt", "T-Shirt", "Jeans")
-    var productSizes by remember { mutableStateOf("") }
+    //var productSizes by remember { mutableStateOf("") }
+    var selectedSizes by remember { mutableStateOf(listOf<String>()) }
     val sizeOptions = listOf("S", "M", "L", "XL")
     var productQuantity by remember { mutableStateOf("") }
     var productBasePrice by remember { mutableStateOf("") }
     var productDiscountPrice by remember { mutableStateOf("") }
-    //val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val clipData = data?.clipData
+            // Handle multiple selection (if available)
+            if (clipData != null) {
+                val uris = mutableListOf<Uri>()
+                for (i in 0 until clipData.itemCount) {
+                    uris.add(clipData.getItemAt(i).uri)
+                }
+                selectedImages += uris
+            } else {
+                // Single image selection
+                data?.data?.let { uri ->
+                    selectedImages += listOf(uri)
+                }
+            }
+        }
+    }
+
+    /*val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+        // Update the selected images list when images are picked
+        selectedImages += uris ?: emptyList()
+    }*/
+
+    val quantities = productQuantity.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+
+    // Convert selectedImages (List<Uri>) to List<File>
+    val selectedFiles = selectedImages.mapNotNull { uri ->
+        uriToFile(uri, context)
+    }
 
     Scaffold(
         topBar = {
@@ -117,7 +173,12 @@ fun AddProductScreen(
                         )
 
                         // Product Images
-                        AddImage()
+                        AddImage(
+                            selectedImages = selectedImages,
+                            imagePickerLauncher = imagePickerLauncher,
+                            onImageRemoved = { imageUri ->
+                                selectedImages = selectedImages - imageUri
+                            })
 
                         HorizontalDivider(
                             thickness = 1.dp,
@@ -145,18 +206,18 @@ fun AddProductScreen(
                         )
 
                         // Product Variants
-                        CustomDropdownField(
+                        MultiSelectionDropdown(
                             fieldTitle = "Product Variants",
                             placeholderText = "Enter product sizes",
-                            input = productSizes,
-                            onValueChange = {productSizes = it},
+                            selectedItems = selectedSizes,
+                            onValueChange = {selectedSizes = it},
                             options = sizeOptions
                         )
 
                         // Product Quantity
                         CustomInputField(
                             fieldTitle = "Product Quantity",
-                            placeholderText = "Enter product quantity",
+                            placeholderText = "Enter product quantity in the same order as sizes (e.g., 10, 15)",
                             input = productQuantity,
                             onValueChange = {productQuantity = it},
                             keyboardType = KeyboardType.Number
@@ -183,13 +244,26 @@ fun AddProductScreen(
                         // Add product button
                         GradientButton(
                             text = "Add Product",
-                            onClick = { /* Handle add product button click */ }
+                            onClick = {
+                                viewModel.addNewProduct(
+                                    productName = productName,
+                                    productDescription = productDescription,
+                                    basePrice = productBasePrice,
+                                    categoryId = "1",
+                                    discountPrice = productDiscountPrice,
+                                    currency = "INR",
+                                    selectedSizes = selectedSizes,
+                                    quantities = quantities,
+                                    images = selectedFiles
+                                )
+                            },
+                            enabled = productName.isNotEmpty() && productDescription.isNotEmpty() && productBarcode.isNotEmpty() && category.isNotEmpty() && productBasePrice.isNotEmpty() && productDiscountPrice.isNotEmpty() && selectedSizes.isNotEmpty() && productQuantity.isNotEmpty() && selectedImages.isNotEmpty()
                         )
                     }
                 }
             }
         }
-        /*if (uiState is UiState.Loading) {
+        if (uiState is UiState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -199,13 +273,11 @@ fun AddProductScreen(
             ) {
                 CircularProgressIndicator(color = Color.White)
             }
-        }*/
+        }
     }
-    /*when (uiState) {
-
+    when (uiState) {
         is UiState.onSuccess -> {
-
-            onLoginVerifyClick(email, isGoogleSignUp)
+            Toast.makeText(context, "Product added successfully", Toast.LENGTH_SHORT).show()
             viewModel.resetState()
         }
 
@@ -215,23 +287,24 @@ fun AddProductScreen(
             ).show()
             viewModel.resetState()
         }
-
         else -> Unit
+    }
+}
 
-    }*/
+fun openGallery(imagePickerLauncher: ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>) {
+    val intent = Intent(Intent.ACTION_PICK).apply {
+        type = "image/*"
+        putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true) // Allow multiple selection
+    }
+    imagePickerLauncher.launch(intent)
 }
 
 @Composable
-fun AddImage() {
-    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
-    val context = LocalContext.current
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris ->
-        // Update the selected images list when images are picked
-        selectedImages = uris ?: emptyList()
-    }
-
+fun AddImage(
+    selectedImages: List<Uri>,
+    imagePickerLauncher: ManagedActivityResultLauncher<Intent, androidx.activity.result.ActivityResult>,
+    onImageRemoved: (Uri) -> Unit
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
@@ -257,7 +330,7 @@ fun AddImage() {
                     contentDescription = "Calendar Icon",
                     tint = Color.White,
                     modifier = Modifier.clickable {
-                        imagePickerLauncher.launch("image/*")
+                        openGallery(imagePickerLauncher)
                     }
                 )
             },
@@ -309,12 +382,27 @@ fun AddImage() {
                                 .padding(4.dp)
                                 .size(20.dp)
                                 .clickable {
-                                    selectedImages = selectedImages - imageUri
+                                    onImageRemoved(imageUri)
                                 }
                         )
                     }
                 }
             }
         }
+    }
+}
+
+fun uriToFile(uri: Uri, context: Context): File? {
+    val file = File(context.cacheDir, "temp_image_${System.currentTimeMillis()}")
+    try {
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            FileOutputStream(file).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+        return file
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
     }
 }

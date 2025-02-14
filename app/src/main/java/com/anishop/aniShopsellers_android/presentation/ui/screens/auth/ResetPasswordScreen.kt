@@ -54,6 +54,9 @@ fun ResetPasswordScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    // Flag to track if OTP verification is clicked
+    var loginClicked by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -119,11 +122,11 @@ fun ResetPasswordScreen(
                             modifier = Modifier
                                 .align(Alignment.Start)
                                 .clickable {
-
+                                    viewModel.forgetPassword(userEmail)
                                 }
                         )
                     }
-
+                    Spacer(modifier = Modifier.height(30.dp))
                     Text(
                         text = "Reset Password",
                         modifier = Modifier,
@@ -161,10 +164,11 @@ fun ResetPasswordScreen(
                         placeHolderText = "Re-enter new password"
                     )
                 }
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.weight(1f))
                 GradientButton(
                     text = "Login",
                     onClick = {
+                        loginClicked = true
                         viewModel.resetPassword(userEmail, otpEntered, newPassword)
                     },
                     enabled = newPassword == reEnterPassword && newPassword.isNotEmpty() && reEnterPassword.isNotEmpty(),
@@ -187,10 +191,13 @@ fun ResetPasswordScreen(
 
             when (uiState) {
                 is UiState.onSuccess -> {
-                    onContinueLogin()
-                    viewModel.resetState()
+                    if (loginClicked){
+                        onContinueLogin()
+                        viewModel.resetState()
+                    }
                 }
                 is UiState.onFailure -> {
+                    loginClicked = false
                     Toast.makeText(
                         context,
                         (uiState as UiState.onFailure).message,

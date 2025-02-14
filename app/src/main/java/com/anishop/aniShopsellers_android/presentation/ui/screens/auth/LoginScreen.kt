@@ -47,7 +47,7 @@ import com.anishop.aniShopsellers_android.utils.network.UiState
 @Composable
 fun LoginScreen(
     onForgotPasswordClick: () -> Unit,
-    onLoginVerifyClick: (String) -> Unit,
+    onLoginVerifyClick: (String, String) -> Unit,
     onLoginSuccessClick: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -141,14 +141,14 @@ fun LoginScreen(
                         modifier = Modifier
                             .padding(vertical = 20.dp)
                     ) {
-                        GoogleAuthButton(
+                        /*GoogleAuthButton(
                             onClick = {
                                 //signInLauncher.launch(signInClient.signInIntent)
                             },
                             modifier = Modifier
                                 .padding(vertical = 6.dp),
                             buttonTitle = "Login in with google"
-                        )
+                        )*/
                         GradientButton(
                             text = "Log in ",
                             onClick = {
@@ -209,7 +209,7 @@ fun LoginScreen(
     }
     when (uiState) {
         is UiState.onSuccess -> {
-            onLoginVerifyClick(email)
+            onLoginVerifyClick(email, password)
             viewModel.resetState()
         }
         is UiState.onFailure -> {

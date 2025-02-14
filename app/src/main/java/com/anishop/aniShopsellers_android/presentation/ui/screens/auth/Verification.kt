@@ -54,6 +54,7 @@ import com.anishop.aniShopsellers_android.utils.network.UiState
 @Composable
 fun VerificationScreen(
     userEmail: String,
+    userPassword: String,
     onContinueClick: () -> Unit,
     navigateUp: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
@@ -63,6 +64,9 @@ fun VerificationScreen(
     var otpEntered by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    // Flag to track if OTP verification is clicked
+    var otpVerificationClicked by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -126,7 +130,7 @@ fun VerificationScreen(
                         modifier = Modifier
                             .align(Alignment.Start)
                             .clickable {
-
+                                viewModel.loginEmail(userEmail, userPassword)
                             }
                     )
                     /*Row(
@@ -155,6 +159,7 @@ fun VerificationScreen(
                 GradientButton(
                     text = "Enter OTP",
                     onClick = {
+                        otpVerificationClicked = true
                         viewModel.loginOtpVerify(userEmail, otpEntered)
                     },
                     enabled = otpValues.isNotEmpty(),
@@ -177,9 +182,11 @@ fun VerificationScreen(
         }
         when (uiState) {
             is UiState.onSuccess -> {
-                LaunchedEffect(Unit) {
-                    onContinueClick()
-                    viewModel.resetState()
+                if (otpVerificationClicked){
+                    LaunchedEffect(Unit) {
+                        onContinueClick()
+                        viewModel.resetState()
+                    }
                 }
             }
             is UiState.onFailure -> {

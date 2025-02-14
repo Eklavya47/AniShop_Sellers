@@ -25,10 +25,11 @@ fun AuthNavigation(
                 onForgotPasswordClick = {
                     authNavController.navigate(AuthNavGraph.ForgotPassword)
                 },
-                onLoginVerifyClick = { userEmail->
+                onLoginVerifyClick = { userEmail, userPassword ->
                     authNavController.navigate(
                         AuthNavGraph.Verification(
                             userEmail = userEmail,
+                            userPassword = userPassword
                         )
                     )
                 },
@@ -51,8 +52,10 @@ fun AuthNavigation(
         }
         composable<AuthNavGraph.Verification> { navBackStackEntry ->
             val userEmail = navBackStackEntry.toRoute<AuthNavGraph.Verification>().userEmail
+            val userPassword = navBackStackEntry.toRoute<AuthNavGraph.Verification>().userPassword
             VerificationScreen(
                 userEmail = userEmail,
+                userPassword = userPassword,
                 onContinueClick = {
                     onAuthComplete()
                 },

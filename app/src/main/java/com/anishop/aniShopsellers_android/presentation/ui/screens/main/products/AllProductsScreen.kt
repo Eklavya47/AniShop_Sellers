@@ -1,5 +1,6 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.main.products
 
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,17 +26,22 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,20 +49,33 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.anishop.aniShopsellers_android.R
+import com.anishop.aniShopsellers_android.data.model.products.Product
 import com.anishop.aniShopsellers_android.presentation.navigation.MainNavGraph
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppBottomNavBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
+import com.anishop.aniShopsellers_android.presentation.ui.screens.main.products.viewModel.AllProductsScreenViewModel
+import com.anishop.aniShopsellers_android.utils.network.UiState
 
 @Composable
 fun AllProductsScreen(
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
-    onNavigate: () -> Unit
+    onNavigate: () -> Unit,
+    viewModel: AllProductsScreenViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val allProducts by viewModel.allProducts.collectAsState()
+
     // Fake Data
-    val products = listOf(
+    /*val products = listOf(
         ProductUI("11","Latest Men's hoodie blue with anime design", "₹ 1299","4.2",false, R.drawable.product_one, 4.5),
         ProductUI("12","Men's hoodie black with anime design", "₹ 2299","4.3",true, R.drawable.product_one, 4.5),
         ProductUI("13","Men's tshirt black with anime design", "₹ 1399","4.4",false, R.drawable.product_one, 4.5),
@@ -64,7 +83,7 @@ fun AllProductsScreen(
         ProductUI("15","Men's white hoodie with anime design", "₹ 1599","4.2",true, R.drawable.product_one, 4.5),
         ProductUI("16","Men's polo tshirt with anime design", "₹ 999","4.0",true, R.drawable.product_one, 4.5),
         ProductUI("17","Men's tshirt black with anime design", "₹ 1399","4.4",false, R.drawable.product_one, 4.5),
-    )
+    )*/
 
     Scaffold(
         topBar = {
@@ -96,23 +115,43 @@ fun AllProductsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(products.size) {index ->
+            items(allProducts.size) {index ->
                 ProductCard(
-                    product = products[index],
+                    product = allProducts[index],
                     onProductClick = { /* TODO: Handle product click */ },
-                    onHeartClick = { /* TODO: Handle wishlist toggle */ }
                 )
             }
         }
+        if (uiState is UiState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+                    .clickable(enabled = false) { },
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
+        }
     }
+    /*when(uiState){
+        is UiState.onSuccess ->{
+
+        }
+        is UiState.onFailure ->{
+            Toast.makeText(
+                context, (uiState as UiState.onFailure).message, Toast.LENGTH_SHORT
+            ).show()
+        }
+        else -> Unit
+    }*/
 }
 
 // Product Card
 @Composable
 fun ProductCard(
-    product: ProductUI,
-    onProductClick: (ProductUI) -> Unit,
-    onHeartClick: () -> Unit
+    product: Product,
+    onProductClick: (Product) -> Unit,
 ) {
     Card(
         onClick = { onProductClick(product) },
@@ -133,15 +172,32 @@ fun ProductCard(
                 .fillMaxWidth()
                 .fillMaxHeight(0.72f)
         ) {
-            Image(
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(product.images[0])
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Product Image",
+                contentScale = ContentScale.FillBounds,
+                loading = {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary, modifier = Modifier.scale(0.5f)
+                    )
+                },
+                success = {
+                    SubcomposeAsyncImageContent()
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+            /*Image(
                 painter = painterResource(product.productImage),
                 contentDescription = product.productName + product.basePrice,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
-            )
-            Card(
+            )*/
+            /*Card(
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -170,7 +226,7 @@ fun ProductCard(
                         tint = if(!product.isWishlisted) MaterialTheme.colorScheme.background else Color(0xFFED1010),
                     )
                 }
-            }
+            }*/
         }
         Column(
             modifier = Modifier
@@ -181,7 +237,7 @@ fun ProductCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = product.productName,
+                text = product.name,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
                 style = MaterialTheme.typography.titleSmall.copy(
@@ -195,7 +251,7 @@ fun ProductCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = product.basePrice,
+                    text = product.basePrice.toString(),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color(0xFF909DA5)
                     ),
@@ -213,7 +269,7 @@ fun ProductCard(
                         tint = Color.Unspecified
                     )
                     Text(
-                        text = product.rating.toString(),
+                        text = product.averageRating.toString(),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onBackground
                         )
@@ -224,6 +280,7 @@ fun ProductCard(
     }
 }
 
+/*
 data class ProductUI(
     val productId: String,
     val productName: String,
@@ -232,4 +289,4 @@ data class ProductUI(
     val isWishlisted: Boolean,
     @DrawableRes val productImage: Int,
     val rating: Double,
-)
+)*/

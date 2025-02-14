@@ -38,6 +38,6 @@ sealed class AppNavGraph {
 sealed class AuthNavGraph {
     @Serializable data object Login: AuthNavGraph()
     @Serializable data object ForgotPassword: AuthNavGraph()
-    @Serializable data class Verification(val userEmail:String): AuthNavGraph()
+    @Serializable data class Verification(val userEmail:String ,val userPassword:String): AuthNavGraph()
     @Serializable data class ResetPassword(val userEmail:String ): AuthNavGraph()
 }
