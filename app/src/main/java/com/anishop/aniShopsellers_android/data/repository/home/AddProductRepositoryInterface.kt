@@ -15,8 +15,14 @@ interface AddProductRepositoryInterface {
         categoryId: String,
         discountPrice: String,
         currency: String,
-        selectedSizes: List<String>,
-        quantities: List<String>,
-        images: List<File>
+        images: List<File>,
+        variantsSizeFirst: String,
+        variantsQuantityFirst: String,
+        variantsSizeSecond: String,
+        variantsQuantitySecond: String,
+        variantsSizeThird: String,
+        variantsQuantityThird: String,
+        variantsSizeFourth: String,
+        variantsQuantityFourth: String
     ): Flow<DataState<SimpleResponse>>
 }

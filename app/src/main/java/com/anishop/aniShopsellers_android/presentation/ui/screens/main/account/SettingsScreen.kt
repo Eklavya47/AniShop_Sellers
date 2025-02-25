@@ -1,5 +1,6 @@
 package com.anishop.aniShopsellers_android.presentation.ui.screens.main.account
 
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
@@ -32,14 +33,20 @@ import com.anishop.aniShopsellers_android.R
 import com.anishop.aniShopsellers_android.presentation.navigation.MainNavGraph
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppBottomNavBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 
 @Composable
 fun SettingsScreen(
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
     onNavigate: () -> Unit,
+    onSellerAccountClick: () -> Unit,
+    onGeneralStatementClick: () -> Unit,
+    onBankAccountDetailsClick: () -> Unit,
     onLogoutClick: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -71,7 +78,7 @@ fun SettingsScreen(
                 leadingIcon = R.drawable.ic_account_circle_outlined,
                 trailingIcon = R.drawable.ic_chevron_right,
                 title = "Seller Account",
-                onClick = {  }
+                onClick = { onSellerAccountClick() }
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -86,15 +93,15 @@ fun SettingsScreen(
                     leadingIcon = R.drawable.ic_general_statement,
                     trailingIcon = R.drawable.ic_chevron_right,
                     title = "General Statement",
-                    onClick = { /*onOptionsClick(AccountScreenOption.MyOrders)*/ }
+                    onClick = { onGeneralStatementClick() }
                 )
 
                 // Language
                 OptionsCard(
                     leadingIcon = R.drawable.ic_language,
                     trailingIcon = R.drawable.ic_chevron_right,
-                    title = "Language",
-                    onClick = { /*onOptionsClick(AccountScreenOption.MyOrders)*/ }
+                    title = "Bank Account Details",
+                    onClick = { onBankAccountDetailsClick() }
                 )
 
                 // Sellers FAQ
@@ -109,8 +116,11 @@ fun SettingsScreen(
                 OptionsCard(
                     leadingIcon = R.drawable.ic_about,
                     trailingIcon = R.drawable.ic_chevron_right,
-                    title = "About",
-                    onClick = { /*onOptionsClick(AccountScreenOption.MyOrders)*/ }
+                    title = "Licenses",
+                    onClick = {
+                        val intent = Intent(context, OssLicensesMenuActivity::class.java)
+                        context.startActivity(intent)
+                    }
                 )
             }
 

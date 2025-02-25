@@ -62,11 +62,9 @@ fun VerificationScreen(
     val otpLength = 6
     val otpValues = remember { List(otpLength) { mutableStateOf("") } }
     var otpEntered by remember { mutableStateOf("") }
-    val uiState by viewModel.uiState.collectAsState()
+    val uiStateLoginOtpVerify by viewModel.uiStateLoginOtpVerify.collectAsState()
+    val uiStateResendOtp by viewModel.uiStateLogin.collectAsState()
     val context = LocalContext.current
-
-    // Flag to track if OTP verification is clicked
-    var otpVerificationClicked by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -159,7 +157,6 @@ fun VerificationScreen(
                 GradientButton(
                     text = "Enter OTP",
                     onClick = {
-                        otpVerificationClicked = true
                         viewModel.loginOtpVerify(userEmail, otpEntered)
                     },
                     enabled = otpValues.isNotEmpty(),
@@ -168,7 +165,7 @@ fun VerificationScreen(
                         .padding(horizontal = 2.dp, vertical = 20.dp)
                 )
             }
-            if (uiState is UiState.Loading) {
+            if (uiStateLoginOtpVerify is UiState.Loading || uiStateResendOtp is UiState.Loading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -180,20 +177,39 @@ fun VerificationScreen(
                 }
             }
         }
-        when (uiState) {
+        when (uiStateLoginOtpVerify) {
             is UiState.onSuccess -> {
-                if (otpVerificationClicked){
-                    LaunchedEffect(Unit) {
-                        onContinueClick()
-                        viewModel.resetState()
-                    }
+                LaunchedEffect(Unit) {
+                    onContinueClick()
+                    viewModel.resetState()
                 }
             }
             is UiState.onFailure -> {
-                LaunchedEffect(uiState) {
+                LaunchedEffect(uiStateLoginOtpVerify) {
                     Toast.makeText(
                         context,
-                        (uiState as UiState.onFailure).message,
+                        (uiStateLoginOtpVerify as UiState.onFailure).message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.resetState()
+                }
+            }
+            else -> Unit
+        }
+        when (uiStateResendOtp) {
+            is UiState.onSuccess -> {
+                Toast.makeText(
+                    context,
+                    "OTP resent successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
+                viewModel.resetState()
+            }
+            is UiState.onFailure -> {
+                LaunchedEffect(uiStateResendOtp) {
+                    Toast.makeText(
+                        context,
+                        (uiStateLoginOtpVerify as UiState.onFailure).message,
                         Toast.LENGTH_SHORT
                     ).show()
                     viewModel.resetState()

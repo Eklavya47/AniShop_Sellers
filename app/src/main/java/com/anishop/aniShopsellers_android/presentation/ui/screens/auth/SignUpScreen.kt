@@ -1,3 +1,4 @@
+/*
 package com.anishop.aniShopsellers_android.presentation.ui.screens.auth
 
 import android.util.Patterns
@@ -163,7 +164,8 @@ fun SignUpScreen(
                             GradientButton(
                                 text = "Create an Account",
                                 onClick = {
-                                    /*if (isFormValid) {
+                                    */
+/*if (isFormValid) {
                                         isGoogleSignUp = false
                                         viewModel.signUp(
                                             userName = fullName,
@@ -171,7 +173,8 @@ fun SignUpScreen(
                                             userPassword = password,
                                             isGoogleSignUp = isGoogleSignUp
                                         )
-                                    }*/
+                                    }*//*
+
                                 },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
@@ -205,7 +208,8 @@ fun SignUpScreen(
             }
         }
     }
-    /*when (uiState) {
+    */
+/*when (uiState) {
         is UiState.onSuccess -> {
             onAccountVerify(email, isGoogleSignUp)
             viewModel.resetState()
@@ -220,7 +224,8 @@ fun SignUpScreen(
         }
 
         else -> Unit
-    }*/
+    }*//*
+
 }
 
 @Composable
@@ -274,4 +279,4 @@ fun TermsAndConditionsText(
                 }
             }
         })
-}
+}*/

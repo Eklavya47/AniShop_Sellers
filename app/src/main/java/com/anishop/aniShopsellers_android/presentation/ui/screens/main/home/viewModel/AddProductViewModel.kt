@@ -33,9 +33,15 @@ class AddProductViewModel @Inject constructor(
         categoryId: String,
         discountPrice: String,
         currency: String,
-        selectedSizes: List<String>,
-        quantities: List<String>,
-        images: List<File>
+        images: List<File>,
+        variantsSizeFirst: String,
+        variantsQuantityFirst: String,
+        variantsSizeSecond: String,
+        variantsQuantitySecond: String,
+        variantsSizeThird: String,
+        variantsQuantityThird: String,
+        variantsSizeFourth: String,
+        variantsQuantityFourth: String
     ){
         viewModelScope.launch {
             val authToken = getAuthKey()
@@ -48,9 +54,15 @@ class AddProductViewModel @Inject constructor(
                     categoryId,
                     discountPrice,
                     currency,
-                    selectedSizes,
-                    quantities,
-                    images
+                    images,
+                    variantsSizeFirst,
+                    variantsQuantityFirst,
+                    variantsSizeSecond,
+                    variantsQuantitySecond,
+                    variantsSizeThird,
+                    variantsQuantityThird,
+                    variantsSizeFourth,
+                    variantsQuantityFourth
                 ).onEach {
                     when(it){
                         is DataState.Loading -> {

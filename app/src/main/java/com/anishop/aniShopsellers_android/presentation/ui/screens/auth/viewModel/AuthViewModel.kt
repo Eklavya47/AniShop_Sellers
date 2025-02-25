@@ -20,8 +20,17 @@ class AuthViewModel @Inject constructor(
     private val secureStorage: SharedPreferences
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
-    val uiState get() = _uiState.asStateFlow()
+    private val _uiStateLogin = MutableStateFlow<UiState>(UiState.Idle)
+    val uiStateLogin get() = _uiStateLogin.asStateFlow()
+
+    private val _uiStateLoginOtpVerify = MutableStateFlow<UiState>(UiState.Idle)
+    val uiStateLoginOtpVerify get() = _uiStateLoginOtpVerify.asStateFlow()
+
+    private val _uiStateForgetPassword = MutableStateFlow<UiState>(UiState.Idle)
+    val uiStateForgetPassword get() = _uiStateForgetPassword.asStateFlow()
+
+    private val _uiStateResetPassword = MutableStateFlow<UiState>(UiState.Idle)
+    val uiStateResetPassword get() = _uiStateResetPassword.asStateFlow()
 
     private fun saveAuthKey(authKey: String) {
         secureStorage.edit().putString("auth_key", authKey).apply()
@@ -44,13 +53,13 @@ class AuthViewModel @Inject constructor(
             repository.loginEmail(userEmail, userPassword).onEach {
                 when (it) {
                     is DataState.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _uiStateLogin.value = UiState.Loading
                     }
                     is DataState.Success -> {
-                        _uiState.value = UiState.onSuccess(it.data.message)
+                        _uiStateLogin.value = UiState.onSuccess(it.data.message)
                     }
                     is DataState.Error -> {
-                        _uiState.value = UiState.onFailure(it.exception.message.toString())
+                        _uiStateLogin.value = UiState.onFailure(it.exception.message.toString())
                     }
                 }
             }.launchIn(viewModelScope)
@@ -62,15 +71,15 @@ class AuthViewModel @Inject constructor(
             repository.loginOtpVerify(userEmail, otp).onEach {
                 when (it) {
                     is DataState.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _uiStateLoginOtpVerify.value = UiState.Loading
                     }
                     is DataState.Success -> {
-                        _uiState.value = UiState.onSuccess(it.data.message)
+                        _uiStateLoginOtpVerify.value = UiState.onSuccess(it.data.message)
                         saveAuthKey(it.data.token)
                         saveLoginStatus()
                     }
                     is DataState.Error -> {
-                        _uiState.value = UiState.onFailure(it.exception.message.toString())
+                        _uiStateLoginOtpVerify.value = UiState.onFailure(it.exception.message.toString())
                     }
                 }
             }.launchIn(viewModelScope)
@@ -82,13 +91,13 @@ class AuthViewModel @Inject constructor(
             repository.forgetPassword(userEmail).onEach {
                 when (it) {
                     is DataState.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _uiStateForgetPassword.value = UiState.Loading
                     }
                     is DataState.Success -> {
-                        _uiState.value = UiState.onSuccess(it.data.message)
+                        _uiStateForgetPassword.value = UiState.onSuccess(it.data.message)
                     }
                     is DataState.Error -> {
-                        _uiState.value = UiState.onFailure(it.exception.message.toString())
+                        _uiStateForgetPassword.value = UiState.onFailure(it.exception.message.toString())
                     }
                 }
             }.launchIn(viewModelScope)
@@ -100,13 +109,13 @@ class AuthViewModel @Inject constructor(
             repository.resetPassword(userEmail, otp, newPassword).onEach {
                 when (it) {
                     is DataState.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _uiStateResetPassword.value = UiState.Loading
                     }
                     is DataState.Success -> {
-                        _uiState.value = UiState.onSuccess(it.data.message)
+                        _uiStateResetPassword.value = UiState.onSuccess(it.data.message)
                     }
                     is DataState.Error -> {
-                        _uiState.value = UiState.onFailure(it.exception.message.toString())
+                        _uiStateResetPassword.value = UiState.onFailure(it.exception.message.toString())
                     }
                 }
             }.launchIn(viewModelScope)
@@ -114,6 +123,9 @@ class AuthViewModel @Inject constructor(
     }
 
     fun resetState() {
-        _uiState.value = UiState.Idle
+        _uiStateLogin.value = UiState.Idle
+        _uiStateLoginOtpVerify.value = UiState.Idle
+        _uiStateForgetPassword.value = UiState.Idle
+        _uiStateResetPassword.value = UiState.Idle
     }
 }

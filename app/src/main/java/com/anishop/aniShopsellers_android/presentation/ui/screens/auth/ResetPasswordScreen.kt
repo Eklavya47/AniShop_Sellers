@@ -51,11 +51,9 @@ fun ResetPasswordScreen(
     val otpLength = 6
     val otpValues = remember { List(otpLength) { mutableStateOf("") } }
     var otpEntered by remember { mutableStateOf("") }
-    val uiState by viewModel.uiState.collectAsState()
+    val uiStateResendOtp by viewModel.uiStateForgetPassword.collectAsState()
+    val uiStateResetPassword by viewModel.uiStateResetPassword.collectAsState()
     val context = LocalContext.current
-
-    // Flag to track if OTP verification is clicked
-    var loginClicked by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -168,7 +166,6 @@ fun ResetPasswordScreen(
                 GradientButton(
                     text = "Login",
                     onClick = {
-                        loginClicked = true
                         viewModel.resetPassword(userEmail, otpEntered, newPassword)
                     },
                     enabled = newPassword == reEnterPassword && newPassword.isNotEmpty() && reEnterPassword.isNotEmpty(),
@@ -177,7 +174,7 @@ fun ResetPasswordScreen(
                         .padding(horizontal = 2.dp)
                 )
             }
-            if (uiState is UiState.Loading) {
+            if (uiStateResendOtp is UiState.Loading || uiStateResetPassword is UiState.Loading) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -189,18 +186,40 @@ fun ResetPasswordScreen(
                 }
             }
 
-            when (uiState) {
+            when (uiStateResetPassword) {
                 is UiState.onSuccess -> {
-                    if (loginClicked){
-                        onContinueLogin()
-                        viewModel.resetState()
-                    }
-                }
-                is UiState.onFailure -> {
-                    loginClicked = false
                     Toast.makeText(
                         context,
-                        (uiState as UiState.onFailure).message,
+                        "Password changed Successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.resetState()
+                    onContinueLogin()
+                }
+                is UiState.onFailure -> {
+                    Toast.makeText(
+                        context,
+                        (uiStateResetPassword as UiState.onFailure).message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    viewModel.resetState()
+                }
+                else -> Unit
+            }
+            when (uiStateResendOtp) {
+                is UiState.onSuccess -> {
+                    Toast.makeText(
+                        context,
+                        "OTP resent successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    viewModel.resetState()
+                }
+                is UiState.onFailure -> {
+                    Toast.makeText(
+                        context,
+                        (uiStateResendOtp as UiState.onFailure).message,
                         Toast.LENGTH_SHORT
                     ).show()
 

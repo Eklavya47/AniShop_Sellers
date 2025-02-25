@@ -1,4 +1,4 @@
-package com.anishop.aniShopsellers_android.presentation.ui.screens.main.orders
+package com.anishop.aniShopsellers_android.presentation.ui.screens.main.account
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,30 +25,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anishop.aniShopsellers_android.data.model.account.BankDetails
 import com.anishop.aniShopsellers_android.presentation.ui.components.CustomInputField
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.buttons.GradientButton
-import com.anishop.aniShopsellers_android.presentation.ui.screens.main.orders.viewModel.OrdersScreenViewModel
+import com.anishop.aniShopsellers_android.presentation.ui.screens.main.account.viewModel.BankAccountViewModel
 import com.anishop.aniShopsellers_android.utils.network.UiState
 
 @Composable
-fun DispatchDetailsScreen(
-    orderId: Int,
+fun UpdateBankAccountScreen(
     onNavigateBack: () -> Unit,
-    ordersScreenViewModel: OrdersScreenViewModel = hiltViewModel()
-) {
-    var productHeight by remember { mutableStateOf("") }
-    var productLength by remember { mutableStateOf("") }
-    var productBreadth by remember { mutableStateOf("") }
-    var productWeight by remember { mutableStateOf("") }
-
-    val uiStateDispatchOrder by ordersScreenViewModel.uiStateDispatchOrder.collectAsState()
+    viewModel: BankAccountViewModel = hiltViewModel()
+){
+    val uiState by viewModel.uiStateUpdateBankAccount.collectAsState()
     val context = LocalContext.current
+    var bankName by remember { mutableStateOf("") }
+    var beneficiaryName by remember { mutableStateOf("") }
+    var ifscCode by remember { mutableStateOf("") }
+    var accountNumber by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Dispatch Details",
+                "Update Bank Account",
                 onBackNavigationClick = {
                     onNavigateBack()
                 }
@@ -58,53 +57,55 @@ fun DispatchDetailsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Product Height
+            Spacer(modifier = Modifier.height(10.dp))
             CustomInputField(
-                fieldTitle = "Enter Product Height",
-                placeholderText = "Product Height in cm",
-                input = productHeight,
-                onValueChange = {productHeight = it},
+                fieldTitle = "Bank Name",
+                placeholderText = "Enter Bank Name",
+                input = bankName,
+                onValueChange = {bankName = it},
+                keyboardType = KeyboardType.Unspecified
+            )
+            CustomInputField(
+                fieldTitle = "Beneficiary Name",
+                placeholderText = "Enter Beneficiary Name",
+                input = beneficiaryName,
+                onValueChange = {beneficiaryName = it},
+                keyboardType = KeyboardType.Unspecified
+            )
+            CustomInputField(
+                fieldTitle = "Account Number",
+                placeholderText = "Enter Account Number",
+                input = accountNumber,
+                onValueChange = {accountNumber = it},
                 keyboardType = KeyboardType.Number
             )
-
-            // Product Length
             CustomInputField(
-                fieldTitle = "Enter Product Length",
-                placeholderText = "Product Length in cm",
-                input = productLength,
-                onValueChange = {productLength = it},
-                keyboardType = KeyboardType.Number
+                fieldTitle = "IFSC Code",
+                placeholderText = "Enter IFSC Code",
+                input = ifscCode,
+                onValueChange = {ifscCode = it},
+                keyboardType = KeyboardType.Unspecified
             )
-
-            // Product Breadth
-            CustomInputField(
-                fieldTitle = "Enter Product Breadth",
-                placeholderText = "Product Breadth in cm",
-                input = productBreadth,
-                onValueChange = {productBreadth = it},
-                keyboardType = KeyboardType.Number
-            )
-
-            // Product Weight
-            CustomInputField(
-                fieldTitle = "Enter Product Weight",
-                placeholderText = "Product Weight in kgs",
-                input = productWeight,
-                onValueChange = {productWeight = it},
-                keyboardType = KeyboardType.Number
-            )
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(20.dp))
             GradientButton(
-                text = "Dispatch Product",
-                onClick = { ordersScreenViewModel.dispatchOrder(orderId, productLength, productBreadth, productHeight, productWeight) },
-                enabled = productHeight.isNotEmpty() && productLength.isNotEmpty() && productBreadth.isNotEmpty() && productWeight.isNotEmpty()
+                text = "Update Details",
+                onClick = {
+                    val bankDetails = BankDetails(
+                        bankName = bankName.ifEmpty { null },
+                        benificiaryName = beneficiaryName.ifEmpty { null },
+                        accountNo = accountNumber.ifEmpty { null },
+                        ifscCode = ifscCode.ifEmpty { null }
+                    )
+                    viewModel.updateBankAccount(bankDetails)
+                },
+                enabled = bankName.isNotEmpty() || beneficiaryName.isNotEmpty() || accountNumber.isNotEmpty() || ifscCode.isNotEmpty()
             )
         }
-        if (uiStateDispatchOrder is UiState.Loading) {
+        if (uiState is UiState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -116,23 +117,21 @@ fun DispatchDetailsScreen(
             }
         }
     }
-    when(uiStateDispatchOrder){
+    when(uiState){
         is UiState.onSuccess ->{
             Toast.makeText(
                 context,
-                "Order Dispatched Successfully",
+                "Details Updated Successfully",
                 Toast.LENGTH_SHORT
             ).show()
-            ordersScreenViewModel.resetState()
+            viewModel.resetState()
             onNavigateBack()
         }
         is UiState.onFailure ->{
             Toast.makeText(
-                context,
-                (uiStateDispatchOrder as UiState.onFailure).message,
-                Toast.LENGTH_SHORT
+                context, (uiState as UiState.onFailure).message, Toast.LENGTH_SHORT
             ).show()
-            ordersScreenViewModel.resetState()
+            viewModel.resetState()
         }
         else -> Unit
     }

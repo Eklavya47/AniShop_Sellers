@@ -95,7 +95,7 @@ fun AppBottomNavBar(
 val topLevelRoutes = listOf(
     TopLevelRoute("Home", R.drawable.ic_home_outlined, MainNavGraph.Home.HomePage),
     TopLevelRoute("Products", R.drawable.ic_products_outlined, MainNavGraph.AllProducts),
-    TopLevelRoute("Orders", R.drawable.ic_orders_outlined, MainNavGraph.Orders),
+    TopLevelRoute("Orders", R.drawable.ic_orders_outlined, MainNavGraph.OrdersPage),
     TopLevelRoute("Account", R.drawable.ic_account_circle_outlined, MainNavGraph.Account.SettingsPage),
 )
 

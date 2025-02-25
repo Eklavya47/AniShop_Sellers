@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
     kotlin("plugin.serialization") version "1.9.25"
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 android {
@@ -13,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.anishop.aniShopsellers_android"
-        minSdk = 22
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -95,6 +96,10 @@ dependencies {
     //Local Storage
     implementation(libs.androidx.security.crypto)
 
-    implementation (libs.mpandroidchart)
-    //implementation(libs.compose.charts)
+    // Graph
+    //implementation (libs.mpandroidchart)
+    implementation (libs.ycharts)
+
+    // Open Source Library
+    implementation (libs.play.services.oss.licenses)
 }

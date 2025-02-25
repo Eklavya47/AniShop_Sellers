@@ -45,7 +45,7 @@ fun ForgotPasswordScreen(
     var email by remember { mutableStateOf("") }
     var isEmailError by remember { mutableStateOf(false) }
     var isEmailVerified by remember { mutableStateOf(false) }
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiStateForgetPassword.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(email) {

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -29,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,19 +38,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
+import co.yml.charts.axis.AxisData
+import co.yml.charts.common.model.Point
+import co.yml.charts.ui.linechart.model.IntersectionPoint
+import co.yml.charts.ui.linechart.model.Line
+import co.yml.charts.ui.linechart.model.LineChartData
+import co.yml.charts.ui.linechart.model.LinePlotData
+import co.yml.charts.ui.linechart.model.LineStyle
+import co.yml.charts.ui.linechart.model.LineType
+import co.yml.charts.ui.linechart.model.SelectionHighlightPoint
+import co.yml.charts.ui.linechart.model.SelectionHighlightPopUp
+import co.yml.charts.ui.linechart.model.ShadowUnderLine
 import com.anishop.aniShopsellers_android.R
-import com.anishop.aniShopsellers_android.data.model.home.GraphEntry
+import com.anishop.aniShopsellers_android.data.model.home.processOrders
 import com.anishop.aniShopsellers_android.presentation.navigation.MainNavGraph
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppBottomNavBar
 import com.anishop.aniShopsellers_android.presentation.ui.components.appBars.AppTopBar
@@ -56,19 +68,10 @@ import com.anishop.aniShopsellers_android.presentation.ui.components.buttons.Gra
 import com.anishop.aniShopsellers_android.presentation.ui.screens.main.home.viewModel.HomeScreenViewModel
 import com.anishop.aniShopsellers_android.ui.theme.Primary
 import com.anishop.aniShopsellers_android.utils.network.UiState
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import com.github.mikephil.charting.highlight.Highlight
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 
 @Composable
 fun HomeScreen(
     onAddNewProductClick: () -> Unit,
-    onViewDetailsClick: () -> Unit,
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
     onNavigate: () -> Unit,
@@ -80,15 +83,18 @@ fun HomeScreen(
     val orderSummary by viewModel.orderSummaryList.collectAsState()
     val orderSummaryList = listOf(
         "All Orders" to (orderSummary?.totalOrders ?: 0),
-        "Pending" to (orderSummary?.pendingOrders ?: 0),
-        "Shipped" to (orderSummary?.dispatchedOrders ?: 0),
-        "Canceled" to (orderSummary?.cancelledOrders ?: 0),
         "New Orders" to (orderSummary?.newOrders ?: 0),
+        "Dispatched" to (orderSummary?.dispatchedOrders ?: 0),
+        "Pending" to (orderSummary?.pendingOrders ?: 0),
+        "Return/Refund" to (orderSummary?.inComplete ?: 0),
         "Completed" to (orderSummary?.completed ?: 0),
-        "Return/Refund" to (orderSummary?.inComplete ?: 0)
+        "Canceled" to (orderSummary?.cancelledOrders ?: 0)
     )
     var activeCategoryIndex by remember { mutableStateOf(0) }
-    var selectedTimeRange by remember { mutableStateOf("This Week") }
+    var selectedTimeRange by remember { mutableStateOf("This Month") }
+
+    // Process the orders
+    val (weekOrders, monthOrders, yearOrders) = processOrders(graphData)
 
     Scaffold(
         topBar = {
@@ -151,8 +157,9 @@ fun HomeScreen(
                     onTimeRangeSelected = { selectedTimeRange = it }
                 )
             }
+
             // Line Graph
-            LineChartComponent(graphData, selectedTimeRange, orderSummaryList[activeCategoryIndex].first)
+            LineChart(weekOrders, monthOrders, yearOrders, selectedTimeRange)
 
             Spacer(modifier = Modifier.weight(1f))
             GradientButton(
@@ -241,73 +248,81 @@ fun TimeRangeSelector(
 }
 
 @Composable
-fun LineChartComponent(graphData: List<GraphEntry>, selectedTimeRange: String, selectedOrderType: String) {
-    val context = LocalContext.current
-    val chart = remember { LineChart(context) }
-    var tooltipData by remember { mutableStateOf<Pair<String, String>?>(null) }
-    var tooltipVisible by remember { mutableStateOf(false) }
-
-    val xLabels = when (selectedTimeRange) {
-        "This Week" -> listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-        "This Month" -> (1..30).map { it.toString() }
-        "This Year" -> listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-        else -> emptyList()
+fun LineChart(weekOrders: Map<String, Int>, monthOrders: Map<String, Int>, yearOrders: Map<String, Int>, selectedTimeRange: String) {
+    val steps = 5
+    val ordersData = when (selectedTimeRange) {
+        "This Week" -> weekOrders
+        "This Month" -> monthOrders
+        "This Year" -> yearOrders
+        else -> emptyMap()
     }
+    val pointsData = ordersData.entries.mapIndexed { index, entry ->
+        Point(index.toFloat(), entry.value.toFloat())
+    }
+    //val pointsData = listOf(Point(0f, 40f), Point(1f, 90f), Point(2f, 0f), Point(3f, 60f), Point(4f, 10f))
 
-    val entries = graphData.mapIndexed { index, entry ->
-        Entry(index.toFloat(), entry.totalQuantity.toFloat()).apply {
-            data = entry
+    val xAxisData = AxisData.Builder()
+        .axisStepSize(50.dp)
+        .backgroundColor(Color.Transparent)
+        .steps(pointsData.size - 1)
+        .labelData { i -> ordersData.keys.elementAtOrNull(i)?.take(3)?.capitalize() ?: "" }
+        .labelAndAxisLinePadding(15.dp)
+        //.startDrawPadding(20.dp)
+        .axisLineColor(Color.White)
+        .axisLabelColor(Color.White)
+        .build()
+
+    val maxY = (ordersData.values.maxOrNull() ?: 1).toFloat()
+    val yAxisData = AxisData.Builder()
+        .steps(steps)
+        .backgroundColor(Color.Transparent)
+        .labelAndAxisLinePadding(20.dp)
+        .labelData { i ->
+            val yScale = maxY / steps
+            (i * yScale).toInt().toString()
         }
-    }
+        .axisLineColor(Color.White)
+        .axisLabelColor(Color.White)
+        .build()
 
-    val dataSet = LineDataSet(entries, selectedOrderType).apply {
-        color = Color.Blue.toArgb()
-        valueTextColor = Color.White.toArgb()
-        setCircleColor(Color.White.toArgb())
-        circleRadius = 5f
-        setDrawValues(false)
-        setDrawCircles(true)
-        setDrawFilled(true)
-        setDrawHighlightIndicators(false)
-        lineWidth = 2f
-    }
+    val lineChartData = LineChartData(
+        linePlotData = LinePlotData(
+            lines = listOf(
+                Line(
+                    dataPoints = pointsData,
+                    LineStyle(
+                        color = Color(0xFF14B8A6),
+                        lineType = LineType.SmoothCurve(isDotted = false)
+                    ),
+                    IntersectionPoint(
+                        color = Color(0xFF14B8A6),
+                    ),
+                    SelectionHighlightPoint(
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    ShadowUnderLine(
+                        alpha = 0.5f,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF14B8A6),
+                                Color.White
+                            )
+                        )
+                    ),
+                    SelectionHighlightPopUp()
+                )
+            ),
+        ),
+        xAxisData = xAxisData,
+        yAxisData = yAxisData,
+        gridLines = null,
+        backgroundColor = Color.Transparent
+    )
 
-    val lineData = LineData(dataSet)
-    chart.apply {
-        data = lineData
-        description.isEnabled = false
-        xAxis.apply {
-            valueFormatter = IndexAxisValueFormatter(xLabels)
-            position = XAxis.XAxisPosition.BOTTOM
-            textColor = Color.White.toArgb()
-        }
-        axisLeft.apply {
-            textColor = Color.White.toArgb()
-            axisMaximum = graphData.maxOfOrNull { it.totalQuantity }?.toFloat() ?: 100f
-        }
-        axisRight.isEnabled = false
-        legend.isEnabled = false
-        setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
-            override fun onValueSelected(e: Entry?, h: Highlight?) {
-                val data = e?.data as? GraphEntry
-                data?.let {
-                    tooltipData = it.date to it.status
-                    tooltipVisible = true
-                    Handler(Looper.getMainLooper()).postDelayed({ tooltipVisible = false }, 5000)
-                }
-            }
-
-            override fun onNothingSelected() {
-                tooltipVisible = false
-            }
-        })
-    }
-
-    AndroidView(factory = { chart }, modifier = Modifier.fillMaxWidth().height(200.dp))
-
-    if (tooltipVisible && tooltipData != null) {
-        Tooltip(tooltipData!!.first, tooltipData!!.second)
-    }
+    co.yml.charts.ui.linechart.LineChart(
+        modifier = Modifier.fillMaxWidth().height(300.dp),
+        lineChartData = lineChartData
+    )
 }
 
 @Composable

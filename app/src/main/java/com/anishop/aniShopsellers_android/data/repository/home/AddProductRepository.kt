@@ -12,6 +12,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.HttpException
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -29,44 +30,32 @@ class AddProductRepository @Inject constructor(
         categoryId: String,
         discountPrice: String,
         currency: String,
-        selectedSizes: List<String>,
-        quantities: List<String>,
-        images: List<File>
+        images: List<File>,
+        variantsSizeFirst: String,
+        variantsQuantityFirst: String,
+        variantsSizeSecond: String,
+        variantsQuantitySecond: String,
+        variantsSizeThird: String,
+        variantsQuantityThird: String,
+        variantsSizeFourth: String,
+        variantsQuantityFourth: String
     ): Flow<DataState<SimpleResponse>> = flow {
 
-        // Create Multipart parts for variants (size and quantity)
-        val variantParts = mutableListOf<MultipartBody.Part>()
-
-        for (i in selectedSizes.indices) {
-            val sizePart = selectedSizes[i].toRequestBody("text/plain".toMediaTypeOrNull())
-            val quantityPart = quantities[i].toRequestBody("text/plain".toMediaTypeOrNull())
-
-            // Dynamically create part names for each variant
-            variantParts.add(MultipartBody.Part.createFormData("variant_size_${i}", "", sizePart))
-            variantParts.add(MultipartBody.Part.createFormData("variant_quantity_${i}", "", quantityPart))
-        }
-
-        /*val variantsParts = mutableListOf<MultipartBody.Part>()
-        for (i in selectedSizes.indices) {
-            if (selectedSizes.size != quantities.size) {
-                emit(DataState.Error(IllegalArgumentException("Sizes and quantities lists have different lengths")))
-                return@flow
-            }
-
-            // Add size as a part
-            val sizePart = MultipartBody.Part.createFormData("variants[$i][size]", selectedSizes[i])
-            variantsParts.add(sizePart)
-
-            // Add stockQuantity as a part
-            val quantityPart = MultipartBody.Part.createFormData("variants[$i][stockQuantity]", quantities[i])
-            variantsParts.add(quantityPart)
+        /*// Convert variants to MultipartBody.Part
+        val variantParts = variants.flatMapIndexed { index, variant ->
+            listOf(
+                // Add size for each variant
+                MultipartBody.Part.createFormData("variants[$index][Size]", variant.first),
+                // Add stock quantity for each variant
+                MultipartBody.Part.createFormData("variants[$index][Quantity]", variant.second)
+            )
         }*/
 
         // Convert images to MultipartBody.Part
         val imageParts = images.map { image ->
-            val mimeType = Files.probeContentType(Paths.get(image.absolutePath)) ?: "image/jpeg"
-            val requestBody = image.asRequestBody(mimeType.toMediaTypeOrNull())
-            MultipartBody.Part.createFormData("images[]", image.name, requestBody)
+            //val mimeType = Files.probeContentType(Paths.get(image.absolutePath)) ?: "image/jpeg"
+            val requestBody = image.asRequestBody("image/jpeg".toMediaTypeOrNull())
+            MultipartBody.Part.createFormData("images", image.name, requestBody)
         }
 
         emit(DataState.Loading)
@@ -79,14 +68,29 @@ class AddProductRepository @Inject constructor(
                 categoryId.toRequestBody("text/plain".toMediaTypeOrNull()),
                 discountPrice.toRequestBody("text/plain".toMediaTypeOrNull()),
                 imageParts,
+                variantsSizeFirst.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsQuantityFirst.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsSizeSecond.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsQuantitySecond.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsSizeThird.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsQuantityThird.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsSizeFourth.toRequestBody("text/plain".toMediaTypeOrNull()),
+                variantsQuantityFourth.toRequestBody("text/plain".toMediaTypeOrNull()),
                 currency.toRequestBody("text/plain".toMediaTypeOrNull()),
-                *variantParts.toTypedArray()
+                /*variant*/
             )
             Log.d("APIResponse", "$response")
             emit(DataState.Success(response))
         } catch (e: Exception) {
-            Log.e("APIResponse", "$e")
-            emit(DataState.Error(e))
+            if (e is HttpException) {
+                // This handles the error response (e.g., 400)
+                val errorBody = e.response()?.errorBody()?.string() ?: "Unknown error"
+                Log.e("APIResponse", "Error response: $errorBody")
+                emit(DataState.Error(Exception(errorBody)))
+            } else {
+                Log.e("APIResponse", "Exception: ${e.message}")
+                emit(DataState.Error(e))
+            }
         }
     }
 }

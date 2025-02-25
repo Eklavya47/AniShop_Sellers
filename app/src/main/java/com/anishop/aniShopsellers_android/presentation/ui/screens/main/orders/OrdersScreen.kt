@@ -1,9 +1,6 @@
-@file:Suppress("IMPLICIT_CAST_TO_ANY")
-
 package com.anishop.aniShopsellers_android.presentation.ui.screens.main.orders
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,21 +35,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
@@ -72,10 +65,18 @@ fun OrdersScreen(
     currentDestination: NavDestination?,
     onBottomNavIconClick: (MainNavGraph) -> Unit,
     onNavigate: () -> Unit,
+    onDispatchClick: (Int) -> Unit,
+    onViewDetailsClick: (Int) -> Unit,
     homeScreenViewModel: HomeScreenViewModel = hiltViewModel(),
     orderScreenViewModel: OrdersScreenViewModel = hiltViewModel()
 ) {
-    val uiState by orderScreenViewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val uiStateAllOrders by orderScreenViewModel.uiStateAllOrders.collectAsState()
+    val uiStateNewOrders by orderScreenViewModel.uiStateNewOrders.collectAsState()
+    val uiStatePendingOrders by orderScreenViewModel.uiStatePendingOrder.collectAsState()
+    val uiStateGetDispatchedOrders by orderScreenViewModel.uiStateGetDispatchedOrders.collectAsState()
+    val uiStateConfirmNewOrder by orderScreenViewModel.uiStateConfirmNewOrder.collectAsState()
+    val uiStateCancelNewOrder by orderScreenViewModel.uiStateCancelNewOrder.collectAsState()
     val allOrders by orderScreenViewModel.allOrders.collectAsState()
     val newOrders by orderScreenViewModel.allNewOrders.collectAsState()
     val pendingOrders by orderScreenViewModel.allPendingOrders.collectAsState()
@@ -83,15 +84,15 @@ fun OrdersScreen(
     val orderSummary by homeScreenViewModel.orderSummaryList.collectAsState()
     val orderSummaryList = listOf(
         "All Orders" to (orderSummary?.totalOrders ?: 0),
-        "Pending" to (orderSummary?.pendingOrders ?: 0),
-        "Shipped" to (orderSummary?.dispatchedOrders ?: 0),
-        "Canceled" to (orderSummary?.cancelledOrders ?: 0),
         "New Orders" to (orderSummary?.newOrders ?: 0),
+        "Pending" to (orderSummary?.pendingOrders ?: 0),
+        "Dispatched" to (orderSummary?.dispatchedOrders ?: 0),
+        "Return/Refund" to (orderSummary?.inComplete ?: 0),
         "Completed" to (orderSummary?.completed ?: 0),
-        "Return/Refund" to (orderSummary?.inComplete ?: 0)
+        "Canceled" to (orderSummary?.cancelledOrders ?: 0)
     )
 
-    val dummyCategoryList = listOf("All Orders", "New Orders", "Dispatched", "Pending", "Return & Replace", "Cancel")
+    val dummyCategoryList = listOf("All Orders", "New Orders", "Pending", "Dispatched", "Return & Replace", "Cancelled")
     var activeCategory by remember { mutableStateOf(dummyCategoryList[0]) }
 
     LaunchedEffect(activeCategory) {
@@ -163,34 +164,90 @@ fun OrdersScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if (uiStateAllOrders is UiState.Loading || uiStateNewOrders is UiState.Loading || uiStatePendingOrders is UiState.Loading || uiStateGetDispatchedOrders is UiState.Loading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                //.background(Color.Black.copy(alpha = 0.5f))
+                                .clickable(enabled = false) { },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Spacer(modifier = Modifier.height(100.dp))
+                            CircularProgressIndicator(color = Color.White)
+                        }
+                    }
+                }
+
                 when(activeCategory){
                     "All Orders" -> allOrders?.orders?.let {
                         items(it.size) { index ->
                             OrderCard(
                                 order = allOrders!!.orders[index],
-                                activeCategory
+                                activeCategory,
+                                onCancelClick = {
+                                    orderScreenViewModel.cancelOrder(it)
+                                },
+                                onConfirmClick = {
+                                    orderScreenViewModel.confirmOrder(it)
+                                },
+                                onDispatchClick = {onDispatchClick(it)},
+                                onViewDetailsClick = {onViewDetailsClick(it)}
                             )
                         }
                     }
                     "New Orders" -> newOrders?.newOrders?.let {
                         items(it.size) { index ->
-                            OrderCard(order = newOrders!!.newOrders[index], activeCategory)
+                            OrderCard(
+                                order = newOrders!!.newOrders[index],
+                                activeCategory,
+                                onCancelClick = {
+                                    orderScreenViewModel.cancelOrder(it)
+                                },
+                                onConfirmClick = {
+                                    orderScreenViewModel.confirmOrder(it)
+                                },
+                                onDispatchClick = {onDispatchClick(it)},
+                                onViewDetailsClick = {onViewDetailsClick(it)}
+                            )
                         }
                     }
                     "Dispatched" -> dispatchedOrders?.dispatchedOrders?.let {
                         items(it.size) { index ->
-                            OrderCard(order = dispatchedOrders!!.dispatchedOrders[index], activeCategory)
+                            OrderCard(
+                                order = dispatchedOrders!!.dispatchedOrders[index],
+                                activeCategory,
+                                onCancelClick = {
+                                orderScreenViewModel.cancelOrder(it)
+                            },
+                                onConfirmClick = {
+                                    orderScreenViewModel.confirmOrder(it)
+                                },
+                                onDispatchClick = {onDispatchClick(it)},
+                                onViewDetailsClick = {onViewDetailsClick(it)}
+                            )
                         }
                     }
                     "Pending" -> pendingOrders?.pendingOrders?.let {
                         items(it.size) { index ->
-                            OrderCard(order = pendingOrders!!.pendingOrders[index], activeCategory)
+                            OrderCard(
+                                order = pendingOrders!!.pendingOrders[index],
+                                activeCategory,
+                                onCancelClick = {
+                                    orderScreenViewModel.cancelOrder(it)
+                                },
+                                onConfirmClick = {
+                                    orderScreenViewModel.confirmOrder(it)
+                                },
+                                onDispatchClick = {onDispatchClick(it)},
+                                onViewDetailsClick = {onViewDetailsClick(it)}
+                            )
                         }
                     }
                 }
             }
         }
-        if (uiState is UiState.Loading) {
+        if (uiStateConfirmNewOrder is UiState.Loading || uiStateCancelNewOrder is UiState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -202,17 +259,78 @@ fun OrdersScreen(
             }
         }
     }
-    /*when(uiState){
+    when(uiStateAllOrders){
+        is UiState.onFailure ->{
+            Toast.makeText(
+                context, (uiStateAllOrders as UiState.onFailure).message, Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+        }
+        else -> Unit
+    }
+    when(uiStateNewOrders){
+        is UiState.onFailure ->{
+            Toast.makeText(
+                context, (uiStateNewOrders as UiState.onFailure).message, Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+        }
+        else -> Unit
+    }
+    when(uiStateGetDispatchedOrders){
+        is UiState.onFailure ->{
+            Toast.makeText(
+                context, (uiStateGetDispatchedOrders as UiState.onFailure).message, Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+        }
+        else -> Unit
+    }
+    when(uiStatePendingOrders){
+        is UiState.onFailure ->{
+            Toast.makeText(
+                context, (uiStatePendingOrders as UiState.onFailure).message, Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+        }
+        else -> Unit
+    }
+    when(uiStateConfirmNewOrder){
         is UiState.onSuccess ->{
-
+            Toast.makeText(
+                context,
+                "Order Confirmed Successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+            orderScreenViewModel.getAllNewOrders()
         }
         is UiState.onFailure ->{
             Toast.makeText(
-                context, (uiState as UiState.onFailure).message, Toast.LENGTH_SHORT
+                context, (uiStateAllOrders as UiState.onFailure).message, Toast.LENGTH_SHORT
             ).show()
+            orderScreenViewModel.resetState()
         }
         else -> Unit
-    }*/
+    }
+    when(uiStateCancelNewOrder){
+        is UiState.onSuccess ->{
+            Toast.makeText(
+                context,
+                "Order Cancelled Successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+            orderScreenViewModel.getAllNewOrders()
+        }
+        is UiState.onFailure ->{
+            Toast.makeText(
+                context, (uiStateAllOrders as UiState.onFailure).message, Toast.LENGTH_SHORT
+            ).show()
+            orderScreenViewModel.resetState()
+        }
+        else -> Unit
+    }
 }
 
 @Composable
@@ -293,7 +411,11 @@ fun CategoryButton(
 @Composable
 fun OrderCard(
     order: Order,
-    activeCategory: String
+    activeCategory: String,
+    onCancelClick: (id: Int) -> Unit,
+    onConfirmClick: (id : Int) -> Unit,
+    onDispatchClick: (id : Int) -> Unit,
+    onViewDetailsClick: (id: Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -361,14 +483,14 @@ fun OrderCard(
                     "New Orders" -> {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
-                                onClick = { /* Handle Cancel */ },
+                                onClick = { onCancelClick(order.id) },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF25D61)),
 
                                 ) {
                                 Text(text = "Cancel")
                             }
                             Button(
-                                onClick = { /* Handle Confirm */ },
+                                onClick = { onConfirmClick(order.id) },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F5D0D)),
                             ) {
                                 Text(text = "Confirm")
@@ -377,7 +499,7 @@ fun OrderCard(
                     }
                     "Pending" -> {
                         Button(
-                            onClick = { /* Handle Cancel */ },
+                            onClick = { onDispatchClick(order.id) },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD6D6D6))
                         ) {
                             Text(
@@ -386,9 +508,9 @@ fun OrderCard(
                             )
                         }
                     }
-                    "Shipped" -> {
+                    /*"Shipped" -> {
                         Button(
-                            onClick = { /* Handle Cancel */ },
+                            onClick = { *//* Handle Cancel *//* },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF012000))
                         ) {
                             Text(
@@ -396,8 +518,8 @@ fun OrderCard(
                                 color = Color(0xFF04A900)
                             )
                         }
-                    }
-                    "Canceled" -> {
+                    }*/
+                    "Cancelled" -> {
                         Button(
                             onClick = { /* Handle Cancel */ },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0x59903434))
@@ -408,7 +530,7 @@ fun OrderCard(
                             )
                         }
                     }
-                    "Return/Replace" -> {
+                    "Return & Replace" -> {
                         Button(
                             onClick = { /* Handle Cancel */ },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF282828))
@@ -421,7 +543,7 @@ fun OrderCard(
                     }
                     "Dispatched" -> {
                         Button(
-                            onClick = { /* Handle Cancel */ },
+                            onClick = { onViewDetailsClick(order.id) },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFFFFF))
                         ) {
                             Text(

@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.toSize
 fun MultiSelectionDropdown(
     fieldTitle: String,
     placeholderText: String,
-    selectedItems: List<String>,  // Now accepts multiple selected items
+    selectedItems: List<String>,
     onValueChange: (List<String>) -> Unit,
     options: List<String>,
 ) {
